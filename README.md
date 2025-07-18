@@ -13,10 +13,10 @@ This repository demonstrates a high-performance Laravel application powered by *
 
 This project is part of a comprehensive blog series on building high-performance Laravel applications:
 
-1. **[Introduction to Laravel Octane & Swoole](/blog/hp-octane-swole-01-laravel-octane-swoole-introduction)** - Understanding the fundamentals and performance benefits
-2. **[Setup & Development Environment](/blog/hp-octane-swole-02-laravel-octane-swoole-setup)** - Laravel Sail, Docker configuration, and local development
-3. **[Concurrency & Asynchronous Workflows](/blog/hp-octane-swole-03-concurrency-asynchronous-workflows)** - Parallel processing and queue management
-4. **[Advanced Caching & Performance Monitoring](/blog/hp-octane-swoole-04-advanced-caching-data-management-monitoring-performance)** - Swoole Tables, memory management, and optimization
+1. **[Introduction to Laravel Octane & Swoole](https://qisthi.dev/blog/hp-octane-swole-01-laravel-octane-swoole-introduction)** - Understanding the fundamentals and performance benefits
+2. **[Setup & Development Environment](https://qisthi.dev/blog/hp-octane-swole-02-laravel-octane-swoole-setup)** - Laravel Sail, Docker configuration, and local development
+3. **[Concurrency & Asynchronous Workflows](https://qisthi.dev/blog/hp-octane-swole-03-concurrency-asynchronous-workflows)** - Parallel processing and queue management
+4. **[Advanced Caching & Performance Monitoring](https://qisthi.dev/blog/hp-octane-swoole-04-advanced-caching-data-management-monitoring-performance)** - Swoole Tables, memory management, and optimization
 5. **Production Deployment & Best Practices** ← _You are here_
 
 ## 🚀 What This Project Demonstrates
