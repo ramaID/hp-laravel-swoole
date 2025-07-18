@@ -1,4 +1,6 @@
-<?php // database/seeders/EventSeeder.php
+<?php
+
+// database/seeders/EventSeeder.php
 
 namespace Database\Seeders;
 

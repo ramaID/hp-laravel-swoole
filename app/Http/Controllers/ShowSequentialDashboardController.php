@@ -1,4 +1,6 @@
-<?php // app/Http/Controllers/ShowSequentialDashboardController.php
+<?php
+
+// app/Http/Controllers/ShowSequentialDashboardController.php
 
 namespace App\Http\Controllers;
 

@@ -1,10 +1,12 @@
-<?php // app/Models/Event.php
+<?php
+
+// app/Models/Event.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
@@ -16,6 +18,7 @@ class Event extends Model
     public function scopeOfType(Builder $query, string $type)
     {
         sleep(1); // Simulate a 1-second query time
+
         return $query->where('type', $type)
             ->orderBy('date', 'desc')
             ->limit(5);

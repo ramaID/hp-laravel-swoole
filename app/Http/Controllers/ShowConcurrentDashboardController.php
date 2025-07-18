@@ -1,11 +1,13 @@
-<?php // app/Http/Controllers/ShowConcurrentDashboardController.php
+<?php
+
+// app/Http/Controllers/ShowConcurrentDashboardController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Laravel\Octane\Facades\Octane;
 use Laravel\Octane\Exceptions\TaskTimeoutException;
+use Laravel\Octane\Facades\Octane;
 
 class ShowConcurrentDashboardController extends Controller
 {
@@ -18,13 +20,13 @@ class ShowConcurrentDashboardController extends Controller
 
         try {
             [$count, $eventsInfo, $eventsWarning, $eventsAlert] = Octane::concurrently([
-                fn() => Event::query()->count(),
-                fn() => Event::query()->ofType('INFO')->get(),
-                fn() => Event::query()->ofType('WARNING')->get(),
-                fn() => Event::query()->ofType('ALERT')->get(),
+                fn () => Event::query()->count(),
+                fn () => Event::query()->ofType('INFO')->get(),
+                fn () => Event::query()->ofType('WARNING')->get(),
+                fn () => Event::query()->ofType('ALERT')->get(),
             ]);
         } catch (TaskTimeoutException $e) {
-            return "Error: A task timed out.";
+            return 'Error: A task timed out.';
         }
 
         $time = (hrtime(true) - $time) / 1_000_000; // time in ms
