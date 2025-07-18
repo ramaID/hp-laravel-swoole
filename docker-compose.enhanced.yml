@@ -1,4 +1,5 @@
-# docker-compose.yml
+# Enhanced Docker Compose with Nginx
+# This file provides a complete production-like development environment
 services:
   # Nginx - The front-facing web server
   nginx:
