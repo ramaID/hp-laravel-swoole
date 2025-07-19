@@ -16,9 +16,9 @@ class ShowSequentialController extends \App\Http\Controllers\Controller
         $time = hrtime(true);
 
         $count = Event::query()->count();
-        $eventsInfo = Event::query()->ofType('INFO')->get();
-        $eventsWarning = Event::query()->ofType('WARNING')->get();
-        $eventsAlert = Event::query()->ofType('ALERT')->get();
+        $eventsInfo = Event::query()->ofType('INFO')->count();
+        $eventsWarning = Event::query()->ofType('WARNING')->count();
+        $eventsAlert = Event::query()->ofType('ALERT')->count();
 
         $time = (hrtime(true) - $time) / 1_000_000; // time in ms
 
@@ -26,9 +26,9 @@ class ShowSequentialController extends \App\Http\Controllers\Controller
         $executionTime = $time < 1000 ? number_format($time, 2).' ms' : number_format($time / 1000, 2).' s';
 
         return view('dashboard.default', [
-            'info_count' => $eventsInfo->count(),
-            'warning_count' => $eventsWarning->count(),
-            'alert_count' => $eventsAlert->count(),
+            'info_count' => $eventsInfo,
+            'warning_count' => $eventsWarning,
+            'alert_count' => $eventsAlert,
             'execution_time' => $executionTime,
             'total_count' => $count,
         ]);

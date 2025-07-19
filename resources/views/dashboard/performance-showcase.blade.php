@@ -69,10 +69,6 @@
                         <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                         <span>Swoole Active</span>
                     </div>
-                    <a href="/real-time-metrics"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
-                        Real-time Metrics
-                    </a>
                 </div>
             </div>
         </div>

@@ -21,9 +21,9 @@ class ShowConcurrentController extends \App\Http\Controllers\Controller
         try {
             [$count, $eventsInfo, $eventsWarning, $eventsAlert] = Octane::concurrently([
                 fn () => Event::query()->count(),
-                fn () => Event::query()->ofType('INFO')->get(),
-                fn () => Event::query()->ofType('WARNING')->get(),
-                fn () => Event::query()->ofType('ALERT')->get(),
+                fn () => Event::query()->ofType('INFO')->count(),
+                fn () => Event::query()->ofType('WARNING')->count(),
+                fn () => Event::query()->ofType('ALERT')->count(),
             ]);
         } catch (TaskTimeoutException $e) {
             return response('Error: A task timed out.', 500);
@@ -35,9 +35,9 @@ class ShowConcurrentController extends \App\Http\Controllers\Controller
         $executionTime = $time < 1000 ? number_format($time, 2).' ms' : number_format($time / 1000, 2).' s';
 
         return view('dashboard.default', [
-            'info_count' => $eventsInfo->count(),
-            'warning_count' => $eventsWarning->count(),
-            'alert_count' => $eventsAlert->count(),
+            'info_count' => $eventsInfo,
+            'warning_count' => $eventsWarning,
+            'alert_count' => $eventsAlert,
             'execution_time' => $executionTime,
             'total_count' => $count,
         ]);
