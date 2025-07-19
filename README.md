@@ -368,7 +368,7 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 **Rama** - Full Stack Developer passionate about high-performance web applications
 
-- Blog: [Rama](https://www.qisthi.dev/)
+- Blog: [Building High-Performance Laravel Applications](https://www.qisthi.dev/laravel-octane-series)
 - GitHub: [@ramaID](https://github.com/ramaID)
 - Business Inquiries: [rama@qisthi.dev](mailto:rama@qisthi.dev)
 
