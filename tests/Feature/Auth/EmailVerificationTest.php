@@ -45,3 +45,40 @@ test('email is not verified with invalid hash', function () {
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
+
+test('already verified user is redirected to dashboard', function () {
+    $user = User::factory()->create(); // Already verified
+
+    $verificationUrl = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)]
+    );
+
+    $response = $this->actingAs($user)->get($verificationUrl);
+
+    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+});
+
+test('verification controller can be instantiated', function () {
+    $controller = new \App\Http\Controllers\Auth\VerifyEmailController;
+    expect($controller)->toBeInstanceOf(\App\Http\Controllers\Auth\VerifyEmailController::class);
+});
+
+test('verification emits verified event when email is marked as verified', function () {
+    $user = User::factory()->unverified()->create();
+
+    Event::fake();
+
+    $verificationUrl = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)]
+    );
+
+    $this->actingAs($user)->get($verificationUrl);
+
+    Event::assertDispatched(Verified::class, function ($event) use ($user) {
+        return $event->user->id === $user->id;
+    });
+});

@@ -1,20 +1,21 @@
 <?php
 
-use App\Http\Controllers\ShowCachedDashboardController;
-use App\Http\Controllers\ShowConcurrentDashboardController;
-use App\Http\Controllers\ShowSequentialDashboardController;
-use App\Http\Controllers\ShowTickCachedDashboardController;
+use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/dashboard-sequential', ShowSequentialDashboardController::class)
+Route::get('/dashboard-sequential', Dashboard\ShowSequentialController::class)
     ->name('dashboard.sequential');
-Route::get('/dashboard-concurrent', ShowConcurrentDashboardController::class)
+Route::get('/dashboard-concurrent', Dashboard\ShowConcurrentController::class)
     ->name('dashboard.concurrent');
-Route::get('/dashboard-cached', ShowCachedDashboardController::class)
+Route::get('/dashboard-cached', Dashboard\ShowCachedController::class)
     ->name('dashboard.cached');
-Route::get('/dashboard-tick-cached', ShowTickCachedDashboardController::class)
+Route::get('/dashboard-tick-cached', Dashboard\ShowTickCachedController::class)
     ->name('dashboard.tick-cached');
+Route::get('/performance-showcase', Dashboard\ShowPerformanceShowcaseController::class)
+    ->name('dashboard.performance-showcase');
+Route::get('/real-time-metrics', Dashboard\ShowRealTimeMetricsController::class)
+    ->name('dashboard.real-time-metrics');
 
 // Swoole stats route for monitoring
 Route::get('/swoole-stats', function () {
@@ -39,15 +40,20 @@ Route::get('/test-ticker', function () {
 
         \Illuminate\Support\Facades\Cache::store('octane')->put('dashboard-tick-cache', $result, 120);
 
-        return 'Manually triggered ticker logic. Cache warmed successfully!';
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Manually triggered ticker logic. Cache warmed successfully!',
+            'data' => $result,
+        ]);
     } catch (Exception $e) {
-        return 'Error: '.$e->getMessage();
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Error: '.$e->getMessage(),
+        ], 500);
     }
 });
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', Dashboard\ShowPerformanceShowcaseController::class)->name('home');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

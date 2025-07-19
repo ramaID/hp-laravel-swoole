@@ -39,68 +39,87 @@ class AppServiceProvider extends ServiceProvider
         $this->app->make('events')->listen(
             \Laravel\Octane\Events\WorkerStarting::class,
             function () {
-                $isNotSwoole = config('octane.server') !== 'swoole';
-
-                if ($isNotSwoole) {
-                    return;
-                }
-
-                // Use worker-specific cache key to prevent conflicts
-                $workerId = getmypid(); // Use process ID as unique worker identifier
-                $tickerKey = "dashboard-ticker-{$workerId}";
-                $cacheStore = $this->getCacheStore();
-
-                // Check if this worker already registered the ticker
-                if (Cache::store($cacheStore)->has($tickerKey)) {
-                    return;
-                }
-
-                try {
-                    $callback = function () use ($cacheStore) {
-                        Log::info('Ticker: Refreshing dashboard cache...');
-
-                        try {
-                            // Check if Event model exists and has the required methods
-                            if (!class_exists(Event::class)) {
-                                Log::warning('Ticker: Event model not found, skipping cache refresh');
-                                return;
-                            }
-
-                            // Optimize queries with single query using raw SQL for better performance
-                            $result = $this->fetchDashboardData();
-
-                            $cacheKey = 'dashboard-tick-cache';
-                            $cacheTtl = config('cache.dashboard_ttl', 300); // 5 minutes default
-
-                            Cache::store($cacheStore)->put($cacheKey, $result, $cacheTtl);
-                            Log::info('Ticker: Dashboard cache refreshed successfully', [
-                                'total_events' => $result['count']
-                            ]);
-                        } catch (Exception $e) {
-                            Log::error('Ticker: Failed to refresh dashboard cache', [
-                                'error' => $e->getMessage(),
-                                'trace' => $e->getTraceAsString()
-                            ]);
-                        }
-                    };
-                    Octane::tick('cache-dashboard-query', $callback)
-                        ->seconds(config('cache.dashboard_refresh_interval', 60))  // Configurable interval
-                        ->immediate(); // Run immediately when worker starts
-
-                    // Mark this worker as having registered the ticker
-                    Cache::store($cacheStore)->put($tickerKey, true, 3600); // 1 hour TTL
-
-                    Log::info('Ticker: Dashboard ticker registered successfully', [
-                        'worker_id' => $workerId
-                    ]);
-                } catch (Exception $e) {
-                    Log::error('Ticker: Failed to register dashboard ticker', [
-                        'worker_id' => $workerId,
-                        'error' => $e->getMessage()
-                    ]);
-                }
+                $this->handleWorkerStarting();
             }
         );
+    }
+
+    private function handleWorkerStarting(): void
+    {
+        $isNotSwoole = config('octane.server') !== 'swoole';
+
+        if ($isNotSwoole) {
+            return;
+        }
+
+        // Use worker-specific cache key to prevent conflicts
+        $workerId = getmypid(); // Use process ID as unique worker identifier
+        $tickerKey = "dashboard-ticker-{$workerId}";
+        $cacheStore = $this->getCacheStore();
+
+        // Check if this worker already registered the ticker
+        if (Cache::store($cacheStore)->has($tickerKey)) {
+            return;
+        }
+
+        try {
+            $this->registerOctaneTicker($cacheStore);
+            $this->markWorkerAsRegistered($cacheStore, $tickerKey, $workerId);
+        } catch (Exception $e) {
+            $this->logTickerRegistrationError($workerId, $e);
+        }
+    }
+
+    private function registerOctaneTicker(string $cacheStore): void
+    {
+        $callback = function () use ($cacheStore) {
+            $this->refreshDashboardCache($cacheStore);
+        };
+
+        Octane::tick('cache-dashboard-query', $callback)
+            ->seconds(config('cache.dashboard_refresh_interval', 60))  // Configurable interval
+            ->immediate(); // Run immediately when worker starts
+    }
+
+    private function refreshDashboardCache(string $cacheStore): void
+    {
+        Log::info('Ticker: Refreshing dashboard cache...');
+
+        try {
+            // Optimize queries with single query using raw SQL for better performance
+            $result = $this->fetchDashboardData();
+
+            $cacheKey = 'dashboard-tick-cache';
+            $cacheTtl = config('cache.dashboard_ttl', 300); // 5 minutes default
+
+            Cache::store($cacheStore)->put($cacheKey, $result, $cacheTtl);
+            Log::info('Ticker: Dashboard cache refreshed successfully', [
+                'total_events' => $result['count'],
+            ]);
+        } catch (Exception $e) {
+            Log::error('Ticker: Failed to refresh dashboard cache', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    private function markWorkerAsRegistered(string $cacheStore, string $tickerKey, int $workerId): void
+    {
+        // Mark this worker as having registered the ticker
+        Cache::store($cacheStore)->put($tickerKey, true, 3600); // 1 hour TTL
+
+        Log::info('Ticker: Dashboard ticker registered successfully', [
+            'worker_id' => $workerId,
+        ]);
+    }
+
+    private function logTickerRegistrationError(int $workerId, Exception $e): void
+    {
+        Log::error('Ticker: Failed to register dashboard ticker', [
+            'worker_id' => $workerId,
+            'error' => $e->getMessage(),
+        ]);
     }
 
     private function getCacheStore(): string
@@ -110,15 +129,27 @@ class AppServiceProvider extends ServiceProvider
 
         try {
             Cache::store($store)->get('test');
+
             return $store;
         } catch (Exception $e) {
             Log::warning('Ticker: Octane cache store not available, falling back to default store');
+
             return config('cache.default', 'file');
         }
     }
 
     private function fetchDashboardData(): array
     {
+        // $query = <<<SQL
+        //     COUNT(*) as total_count,
+        //     SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) as info_count,
+        //     SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) as warning_count,
+        //     SUM(CASE WHEN type = ? THEN 1 ELSE 0 END) as alert_count
+        // SQL;
+
+        // // Single optimized query to get counts by type
+        // $eventCounts = Event::selectRaw($query, ['INFO', 'WARNING', 'ALERT'])->first();
+
         $events = Event::all();
 
         return [

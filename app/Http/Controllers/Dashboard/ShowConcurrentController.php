@@ -2,14 +2,14 @@
 
 // app/Http/Controllers/ShowConcurrentDashboardController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Laravel\Octane\Exceptions\TaskTimeoutException;
 use Laravel\Octane\Facades\Octane;
 
-class ShowConcurrentDashboardController extends Controller
+class ShowConcurrentController extends \App\Http\Controllers\Controller
 {
     /**
      * Handle the incoming request.
@@ -26,12 +26,20 @@ class ShowConcurrentDashboardController extends Controller
                 fn () => Event::query()->ofType('ALERT')->get(),
             ]);
         } catch (TaskTimeoutException $e) {
-            return 'Error: A task timed out.';
+            return response('Error: A task timed out.', 500);
         }
 
         $time = (hrtime(true) - $time) / 1_000_000; // time in ms
 
-        // Total time will be the time of the SLOWEST query, ~1 second
-        return "Fetched concurrently in {$time}ms";
+        // Format execution time for display
+        $executionTime = $time < 1000 ? number_format($time, 2).' ms' : number_format($time / 1000, 2).' s';
+
+        return view('dashboard.default', [
+            'info_count' => $eventsInfo->count(),
+            'warning_count' => $eventsWarning->count(),
+            'alert_count' => $eventsAlert->count(),
+            'execution_time' => $executionTime,
+            'total_count' => $count,
+        ]);
     }
 }
