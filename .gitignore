@@ -21,3 +21,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/coverage
+phpunit-coverage-result.xml
+phpunit-execution-result.xml

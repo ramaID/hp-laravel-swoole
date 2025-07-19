@@ -14,8 +14,6 @@ Route::get('/dashboard-tick-cached', Dashboard\ShowTickCachedController::class)
     ->name('dashboard.tick-cached');
 Route::get('/performance-showcase', Dashboard\ShowPerformanceShowcaseController::class)
     ->name('dashboard.performance-showcase');
-Route::get('/real-time-metrics', Dashboard\ShowRealTimeMetricsController::class)
-    ->name('dashboard.real-time-metrics');
 
 // Swoole stats route for monitoring
 Route::get('/swoole-stats', function () {

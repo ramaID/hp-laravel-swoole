@@ -4,6 +4,7 @@
 [![Octane](https://img.shields.io/badge/Laravel-Octane-FF2D20?style=flat&logo=laravel)](https://laravel.com/docs/octane)
 [![Swoole](https://img.shields.io/badge/Swoole-5.x-blue?style=flat)](https://www.swoole.co.uk/)
 [![Docker](https://img.shields.io/badge/Docker-Sail-2496ED?style=flat&logo=docker)](https://laravel.com/docs/sail)
+[![Coverage](https://sonar.malescast.tech/api/project_badges/measure?project=hp-laravel-swoole&metric=coverage&token=sqb_0d53605a530253c84f2150cb60b215e4bd59dbb5)](https://sonar.malescast.tech/dashboard?id=hp-laravel-swoole)
 
 > **Part 5 of the Laravel Octane + Swoole Series**: Production Deployment & Best Practices
 
@@ -130,33 +131,80 @@ curl -I http://localhost
 
 Your application should now be running at **http://localhost** with Swoole!
 
+## 🎮 Testing the Performance Showcase
+
+### Interactive Dashboard
+
+1. **Visit the main dashboard**: `http://localhost/performance-showcase`
+2. **Explore each performance tier**:
+   - Click "Sequential" to experience baseline performance
+   - Click "Concurrent" to see parallel processing improvements
+   - Click "Cached" to witness microsecond response times
+   - Click "Tick Cache" for the ultimate performance experience
+
+### Monitoring Tools
+
+3. **Warm the cache**: `http://localhost/test-ticker`
+   - Manually triggers background cache warming
+   - Prepares tick cache for optimal performance
+
 ## 🎯 Performance Demonstrations
 
-### Concurrent Processing Example
+This application provides a comprehensive **Performance Showcase Dashboard** accessible at `/performance-showcase` (or `/` homepage) that demonstrates four distinct performance optimization levels:
 
-Visit these routes to see the dramatic performance difference:
+### 1. Sequential Processing - The Baseline
 
-- **Sequential Processing**: `/dashboard-sequential` (~3+ seconds)
-- **Concurrent Processing**: `/dashboard-concurrent` (~1 second)
+- **Route**: `/dashboard-sequential`
+- **Average Response Time**: ~3 seconds
+- **Description**: Traditional synchronous processing where each database query waits for the previous one to complete
+- **Use Case**: Represents standard PHP-FPM behavior
 
-The concurrent version uses `Octane::concurrently()` to run multiple database queries in parallel:
+### 2. Concurrent Processing - Parallel Execution
+
+- **Route**: `/dashboard-concurrent`
+- **Average Response Time**: ~1 second
+- **Description**: Uses `Octane::concurrently()` to execute multiple database queries in parallel
+- **Performance Gain**: ~3x faster than sequential
 
 ```php
-[$totalEvents, $infoEvents, $warningEvents, $alertEvents] = Octane::concurrently([
-    fn () => Event::totalCount(),
-    fn () => Event::recentByType('INFO'),
-    fn () => Event::recentByType('WARNING'),
-    fn () => Event::recentByType('ALERT'),
+[$count, $eventsInfo, $eventsWarning, $eventsAlert] = Octane::concurrently([
+    fn () => Event::query()->count(),
+    fn () => Event::query()->ofType('INFO')->count(),
+    fn () => Event::query()->ofType('WARNING')->count(),
+    fn () => Event::query()->ofType('ALERT')->count(),
 ]);
 ```
 
-### Memory Performance
+### 3. Cached Processing - In-Memory Storage
 
-The application demonstrates:
+- **Route**: `/dashboard-cached`
+- **Average Response Time**: ~111μs (microseconds!)
+- **Description**: Leverages Octane's in-memory cache with TTL to store concurrent query results
+- **Performance Gain**: ~27,000x faster than sequential
 
-- **Swoole Tables** for ultra-fast shared memory operations
-- **Proper memory management** to prevent leaks
-- **Worker restart strategies** for long-running processes
+### 4. Tick Cache - Pre-Warmed Background Cache
+
+- **Route**: `/dashboard-tick-cached`
+- **Average Response Time**: ~85μs (microseconds!)
+- **Description**: Pre-warmed cache updated by background processes, eliminating all query overhead
+- **Performance Gain**: ~35,000x faster than sequential
+
+### Real-Time Monitoring
+
+The application also includes:
+
+- **Real-time Metrics Dashboard**: `/real-time-metrics` - Live Swoole server statistics
+- **Swoole Stats API**: `/swoole-stats` - JSON endpoint for monitoring integration
+- **Cache Warming**: `/test-ticker` - Manual trigger for background cache warming
+
+### Performance Showcase Features
+
+The main dashboard (`/performance-showcase`) displays:
+
+- **Live Swoole server statistics** (connections, workers, requests)
+- **Cache status monitoring** (active cache keys, hit rates)
+- **Performance comparison** between all four optimization levels
+- **Interactive navigation** to test each performance tier
 
 ## 🔧 Development Workflow
 
@@ -196,18 +244,21 @@ The application is configured with automatic reloading during development:
 
 ### Response Time Improvements
 
-| Scenario          | Traditional PHP-FPM | Octane + Swoole | Improvement     |
-| ----------------- | ------------------- | --------------- | --------------- |
-| Simple Route      | 50ms                | 15ms            | **3.3x faster** |
-| Database Query    | 120ms               | 35ms            | **3.4x faster** |
-| Complex Dashboard | 800ms               | 250ms           | **3.2x faster** |
-| Concurrent Tasks  | 3000ms              | 1000ms          | **3x faster**   |
+| Performance Tier      | Average Response Time | Description                        | Improvement vs Sequential |
+| --------------------- | --------------------- | ---------------------------------- | ------------------------- |
+| Sequential Processing | ~3 seconds            | Traditional synchronous processing | Baseline                  |
+| Concurrent Processing | ~1 second             | Parallel execution with Octane     | **3x faster**             |
+| Cached Processing     | ~111μs                | In-memory cache with TTL           | **~27,000x faster**       |
+| Tick Cache Processing | ~85μs                 | Pre-warmed background cache        | **~35,000x faster**       |
 
-### Memory Usage
+### Swoole Server Performance
 
-- **Reduced memory overhead** through persistent application state
-- **Shared memory tables** for high-frequency data access
-- **Worker pooling** for efficient resource utilization
+The application showcases real-time Swoole server metrics:
+
+- **Worker Management**: Automatic worker pool management and load balancing
+- **Connection Handling**: Persistent connections and efficient resource utilization
+- **Coroutine Performance**: Asynchronous I/O operations without blocking
+- **Memory Efficiency**: Shared memory tables for ultra-fast data access
 
 ## ⚠️ Important Considerations
 
@@ -231,20 +282,31 @@ Unlike traditional PHP, Octane maintains state between requests. Be aware of:
 
 ```
 ├── app/
-│   ├── Http/Controllers/
-│   │   ├── ShowConcurrentDashboardController.php
-│   │   └── ShowSequentialDashboardController.php
+│   ├── Http/Controllers/Dashboard/
+│   │   ├── ShowPerformanceShowcaseController.php    # Main dashboard with metrics
+│   │   ├── ShowSequentialController.php             # Sequential processing demo
+│   │   ├── ShowConcurrentController.php             # Concurrent processing demo
+│   │   ├── ShowCachedController.php                 # Cached processing demo
+│   │   ├── ShowTickCachedController.php             # Tick cache demo
+│   │   └── ShowRealTimeMetricsController.php        # Live metrics dashboard
 │   ├── Models/
-│   │   └── Event.php
-│   └── Jobs/
+│   │   ├── Event.php                                # Event model with query scopes
+│   │   └── User.php                                 # User model
+│   └── Jobs/                                        # Background job classes
 ├── config/
-│   └── octane.php                 # Octane configuration
+│   └── octane.php                                   # Octane configuration
 ├── database/
 │   ├── migrations/
 │   └── seeders/
-│       ├── EventSeeder.php        # 100K test events
-│       └── UserSeeder.php         # 1K test users
-├── docker-compose.yml             # Sail + Octane configuration
+│       ├── EventSeeder.php                          # 100K test events
+│       └── UserSeeder.php                           # 1K test users
+├── resources/views/dashboard/
+│   ├── performance-showcase.blade.php               # Main dashboard view
+│   ├── real-time-metrics.blade.php                  # Metrics dashboard view
+│   └── default.blade.php                            # Shared dashboard template
+├── routes/
+│   └── web.php                                      # All performance demo routes
+├── docker-compose.yml                               # Sail + Octane configuration
 └── README.md
 ```
 
@@ -313,9 +375,11 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 ### 🎯 Next Steps
 
-1. **Explore** the concurrent dashboard examples
-2. **Read** the complete blog series for deep understanding
-3. **Experiment** with Swoole Tables and background tasks
-4. **Deploy** to production with confidence
+1. **Explore the Performance Showcase**: Visit `/performance-showcase` to see all optimization levels
+2. **Test each performance tier**: Experience the dramatic speed differences firsthand
+3. **Monitor real-time metrics**: Use `/real-time-metrics` to observe Swoole server behavior
+4. **Read the complete blog series** for deep technical understanding
+5. **Experiment with cache warming**: Test `/test-ticker` and tick cache performance
+6. **Deploy to production** with the provided Docker configuration
 
-**Ready to supercharge your Laravel applications? Let's build something fast! 🚀**
+**Ready to supercharge your Laravel applications? Experience microsecond response times! 🚀**
