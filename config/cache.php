@@ -105,4 +105,18 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Cache Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for the dashboard data caching ticker when using Octane.
+    | These settings control how frequently the cache is refreshed and
+    | how much data is stored.
+    |
+    */
+
+    'dashboard_ttl' => env('DASHBOARD_CACHE_TTL', 300), // 5 minutes
+    'dashboard_refresh_interval' => env('DASHBOARD_REFRESH_INTERVAL', 60), // 60 seconds
+
 ];

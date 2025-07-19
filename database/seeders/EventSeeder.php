@@ -21,7 +21,7 @@ class EventSeeder extends Seeder
                 'description' => fake()->realText(),
                 'value' => random_int(1, 10),
                 'date' => fake()->dateTimeThisYear(),
-                'type' => array_rand(['ALERT', 'WARNING', 'INFO']),
+                'type' => fake()->randomElement(['ALERT', 'WARNING', 'INFO']),
             ];
         }
 

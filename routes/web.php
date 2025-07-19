@@ -32,9 +32,9 @@ Route::get('/test-ticker', function () {
     try {
         $result = \Laravel\Octane\Facades\Octane::concurrently([
             'count' => fn () => \App\Models\Event::query()->count(),
-            'eventsInfo' => fn () => \App\Models\Event::query()->ofType('INFO')->get(),
-            'eventsWarning' => fn () => \App\Models\Event::query()->ofType('WARNING')->get(),
-            'eventsAlert' => fn () => \App\Models\Event::query()->ofType('ALERT')->get(),
+            'eventsInfo' => fn () => \App\Models\Event::query()->ofType('INFO')->count(),
+            'eventsWarning' => fn () => \App\Models\Event::query()->ofType('WARNING')->count(),
+            'eventsAlert' => fn () => \App\Models\Event::query()->ofType('ALERT')->count(),
         ]);
 
         \Illuminate\Support\Facades\Cache::store('octane')->put('dashboard-tick-cache', $result, 120);
