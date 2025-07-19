@@ -72,14 +72,10 @@ class ShowPerformanceShowcaseController extends \App\Http\Controllers\Controller
         ];
 
         // Count cached items (if possible)
-        try {
-            $stats['total_cached_items'] = collect([
-                'dashboard-tick-cache',
-                'dashboard-events-cache',
-            ])->filter(fn ($key) => $octaneCache->has($key))->count();
-        } catch (\Exception $e) {
-            // Cache driver doesn't support counting
-        }
+        $stats['total_cached_items'] = collect([
+            'dashboard-tick-cache',
+            'dashboard-events-cache',
+        ])->filter(fn ($key) => $octaneCache->has($key))->count();
 
         return $stats;
     }

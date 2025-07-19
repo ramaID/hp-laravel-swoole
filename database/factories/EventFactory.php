@@ -26,10 +26,10 @@ class EventFactory extends Factory
     {
         return [
             'user_id' => \App\Models\User::factory(),
-            'type' => $this->faker->randomElement(['INFO', 'WARNING', 'ALERT']),
-            'description' => $this->faker->sentence(),
-            'value' => $this->faker->numberBetween(1, 100),
-            'date' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'type' => fake()->randomElement(['INFO', 'WARNING', 'ALERT']),
+            'description' => fake()->sentence(),
+            'value' => fake()->numberBetween(1, 100),
+            'date' => fake()->dateTimeBetween('-1 year', 'now'),
             'created_at' => now(),
             'updated_at' => now(),
         ];

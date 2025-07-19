@@ -78,3 +78,24 @@ test('cached dashboard uses cache when available', function () {
     // Both should have the same data
     expect($response1->viewData('info_count'))->toBe($response2->viewData('info_count'));
 });
+
+test('cached dashboard formatExecutionTime handles different time units', function () {
+    $controller = new ShowCachedController;
+
+    // Use reflection to test private method
+    $reflection = new \ReflectionClass($controller);
+    $method = $reflection->getMethod('formatExecutionTime');
+    $method->setAccessible(true);
+
+    // Test microseconds (< 1ms)
+    $result = $method->invoke($controller, 0.5);
+    expect($result)->toMatch('/^\d+(\.\d+)?μs$/');
+
+    // Test milliseconds (1ms - 1000ms)
+    $result = $method->invoke($controller, 50.0);
+    expect($result)->toMatch('/^\d+(\.\d+)?ms$/');
+
+    // Test seconds (> 1000ms)
+    $result = $method->invoke($controller, 2000.0);
+    expect($result)->toMatch('/^\d+(\.\d+)?s$/');
+});
