@@ -368,8 +368,9 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 **Rama** - Full Stack Developer passionate about high-performance web applications
 
-- Blog: [Your Blog URL]
+- Blog: [Rama](https://www.qisthi.dev/)
 - GitHub: [@ramaID](https://github.com/ramaID)
+- Business Inquiries: [rama@qisthi.dev](mailto:rama@qisthi.dev)
 
 ---
 
@@ -377,9 +378,8 @@ This project is open-sourced software licensed under the [MIT license](LICENSE).
 
 1. **Explore the Performance Showcase**: Visit `/performance-showcase` to see all optimization levels
 2. **Test each performance tier**: Experience the dramatic speed differences firsthand
-3. **Monitor real-time metrics**: Use `/real-time-metrics` to observe Swoole server behavior
-4. **Read the complete blog series** for deep technical understanding
-5. **Experiment with cache warming**: Test `/test-ticker` and tick cache performance
-6. **Deploy to production** with the provided Docker configuration
+3. **Read the complete blog series** for deep technical understanding
+4. **Experiment with cache warming**: Test `/test-ticker` and tick cache performance
+5. **Deploy to production** with the provided Docker configuration
 
 **Ready to supercharge your Laravel applications? Experience microsecond response times! 🚀**
